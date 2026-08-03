@@ -1,0 +1,43 @@
+Code review :
+I read through your notebook — solid effort on the Zomato Bangalore Restaurants dataset (I recognize it; no need for the Kaggle link, the column names like `approx_cost(for two people)`, `listed_in(type)`, `rest_type`, `dish_liked` are unambiguous). Before the cleaned code, here's the review.
+
+## Bugs I found
+
+**1. `approx_cost(for two people)` comma-strip doesn't work**
+```python
+df['approx_cost(for two people)'] = df['approx_cost(for two people)'].astype(str).replace(',',"")
+```
+`.replace(',', "")` on a Series (without `.str`) does *exact value* matching, not substring replacement. A value like `"1,200"` is never equal to `","`, so nothing gets stripped. Then `pd.to_numeric(..., errors='coerce')` silently turns every comma-containing value (all costs ≥ 1000) into `NaN`, which your median-fill then papers over. You're likely losing real cost data for a chunk of higher-priced restaurants. Fix: `.str.replace(',', '', regex=False)`.
+
+**2. Comment/code mismatch on vote sampling**
+```python
+# Calculate 5% of the zero-vote rows
+num_to_keep = int(len(zero_votes_df) * 0.10)
+```
+Comment says 5%, code does 10%. Not fatal, but worth fixing so future-you isn't confused about what was actually run.
+
+## Bigger modeling issues (these matter more for performance)
+
+**3. Imputation is computed on the full dataset before the train/test split** — mean rate, median cost, and grouped-mode fills for `rest_type`/`dish_liked` all use statistics from the *entire* dataframe, including what later becomes your test set. That's data leakage: your test set isn't truly unseen because its values influenced the fill values. The fix is to fit imputers (`SimpleImputer`, or your groupby logic) on `X_train` only, then apply those same fitted values to `X_test`.
+
+**4. `dish_liked` imputation is unused work** — you spend real effort grouped-mode-imputing this column, but it's never included in `numerical_features` or `categorical_features` for the model. Either drop the imputation step or actually use the column.
+
+**5. `cuisines` and `rest_type` are multi-valued strings, one-hot-encoded as whole strings** — your own markdown notes flag `MultiLabelBinarizer` as the right tool for comma-separated multi-label columns like `"North Indian, Chinese"`, but the final pipeline just runs `OneHotEncoder` on the raw string. That treats `"North Indian, Chinese"` and `"Chinese, North Indian"` as different categories, explodes your category count, and throws away the fact that two restaurants share a cuisine. This is very likely a real driver of your weak minority-class performance, since it inflates dimensionality without adding useful structure.
+
+**6. KNN + high-cardinality one-hot data is a bad pairing** — one-hot encoding `rest_type`, `cuisines`, and `listed_in(city)` without collapsing rare categories creates a very sparse, high-dimensional feature space. Euclidean/Minkowski distance (KNN's default) gets unreliable as dimensionality grows — most points end up roughly equidistant ("curse of dimensionality"). This compounds issue #5.
+
+**7. SMOTE on one-hot encoded data is a known anti-pattern** — SMOTE interpolates linearly between neighbors. On one-hot columns, interpolation produces things like `0.5` in two category slots simultaneously, which isn't a real restaurant type — it's a nonsensical synthetic point. That's a plausible reason your macro F1 got *worse* (0.60 → 0.37) after SMOTE. If you want to resample mixed categorical/numeric data properly, use `imblearn.over_sampling.SMOTENC` (built for exactly this) instead of vanilla `SMOTE`.
+
+**8. `n_neighbors=3` was never tuned** — no `GridSearchCV`/cross-validation was run to pick `k`. Worth searching over `k` (and `weights='distance'` vs `'uniform'`) using macro-F1 as the scoring metric, since accuracy is misleading here given the class imbalance you already diagnosed correctly.
+
+## One question for you
+
+Your target is `rate` rounded to the nearest integer, which makes `rate_class 4` dominate almost everything (5992/8436 test rows). Ratings are inherently *ordinal* (1 < 2 < 3 < 4 < 5), not unordered categories — plain KNN classification ignores that ordering. Two options worth considering:
+- Bucket into fewer, more balanced classes (e.g., Low/Average/High) if you just need a business-usable label, or
+- Treat `rate` as continuous and do regression (KNeighborsRegressor), evaluating with RMSE/MAE — which fits the ordinal nature of the target better.
+
+Which direction fits your project's goal — do you need the 1–5 classification specifically, or is a coarser rating tier acceptable?
+
+Now let me put together the cleaned/fixed code.Split into `# %% [n]` blocks so you can paste each one straight into a Colab cell.
+
+The two biggest performance levers, in order of likely impact: fixing the `cuisines`/`rest_type` multi-label handling (currently they're one-hot-encoded as full strings, badly inflating dimensionality for a distance-based model like KNN), and moving imputation to after the train/test split. The comma-strip bug on `approx_cost` is worth fixing too since it's silently corrupting a chunk of your cost data.

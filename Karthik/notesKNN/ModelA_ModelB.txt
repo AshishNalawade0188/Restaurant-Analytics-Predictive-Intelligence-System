@@ -1,0 +1,35 @@
+Here's what this notebook does, in plain terms, followed by what the results actually mean.
+
+## What it's doing, step by step
+
+1. **Loads Zomato restaurant data** (51,717 rows) from your database.
+2. **Cleans it once** — fixes the rating format, strips commas from cost, drops rows with no cuisine info, thins out zero-vote restaurants, and builds two versions of the target you're predicting: a fine-grained one (star rating rounded to 1–5) and a simpler one (Low/Average/High).
+3. **Splits into train/test once**, grouped by restaurant name so the same restaurant never appears in both sets.
+4. **Checks how much data is actually missing** after all that cleaning — turns out almost none (more on this below).
+5. **Trains four separate models**: imputed-5class, imputed-tier, raw-5class, raw-tier — "imputed" fills in missing values, "raw" just drops those rows.
+6. **Evaluates all four on the identical test rows**, so it's a fair side-by-side.
+7. **Saves all four as `.pkl` files** you can reload later.
+
+## What the results actually say
+
+**Finding 1 — the imputed-vs-raw question turned out to barely matter here.**
+Look at cell `[7]`'s output: `train: 33470 total, 33262 complete-case (99.4%)`. Only about 200 rows out of 33,470 had any missing values left by that point — most of the "missingness problem" had already been cleaned away earlier in the pipeline (dropping rows with no cuisine, etc.). So Model A (imputed) and Model B (raw) ended up training on almost the same data, which is exactly why their results are nearly identical:
+
+| Target | Model A (imputed) | Model B (raw) |
+|---|---|---|
+| 5-class | acc 0.675, macro-F1 0.293 | acc 0.706, macro-F1 0.288 |
+| 3-tier | acc 0.755, macro-F1 0.490 | acc 0.755, macro-F1 0.490 |
+
+For the tier target they're basically indistinguishable. For 5-class, Model B edges out on accuracy but Model A edges out on macro-F1 — the gap in both cases is small enough to be noise rather than a real difference. **Bottom line: with this dataset, at this stage of cleaning, it doesn't much matter whether you impute or drop.** That's a legitimate finding, not a failed experiment — it tells you the earlier cleaning steps already did the heavy lifting on missingness.
+
+**Finding 2 — the coarser 3-tier target genuinely works better**, exactly as predicted earlier: macro-F1 roughly 0.49 vs 0.29 for the fine-grained 5-class target. Collapsing 5 imbalanced classes into 3 broader ones is a real, meaningful improvement here, not a wash like the imputation question.
+
+**Finding 3 — class 1 (1-star ratings) doesn't exist in this data anymore.** Cell `[6]`'s warning confirms it: zero rows in both train and test. Any "0.00" you see for class 1 in the reports isn't the model failing — there was nothing to learn or test. This likely happened because true 1-star restaurants are rare to begin with and got filtered out somewhere upstream (missing cuisine info, or simply too few to survive the votes/cuisines cleaning).
+
+**Finding 4 — even the tier model struggles badly on "Low".** In the tier results, "Low" has 504 test examples but only 1% recall — the model essentially never predicts it. "Low" is a small minority sandwiched between two much bigger classes (Average: 5317, High: 2267), so KNN's neighbor-voting mechanism gets swamped by the majority classes almost every time. This is the imbalance problem persisting even after bucketing.
+
+**Finding 5 — the "Drinks Only" warning is expected, not a bug.** It means a `rest_type` value ("Drinks Only") showed up in the test set that the model never saw during training, so it gets treated as an unknown/absent category rather than crashing. Harmless, but worth knowing it means a handful of test rows are being scored with slightly incomplete category information.
+
+## The honest headline
+
+This run answered the question you set out to test: **does imputing vs. dropping nulls change KNN performance?** — and the answer is essentially no, for this dataset. The bigger lever by far is the target framing (3-tier beats 5-class by a wide margin), and the remaining weak spot is minority-class recall (1★, 2★, "Low" tier), which imputation strategy alone won't fix — that would need either resampling done correctly (SMOTENC, not vanilla SMOTE) or a non-distance-based model like Random Forest with `class_weight='balanced'`.
