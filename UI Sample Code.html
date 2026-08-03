@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant ML Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f8f9fa; padding: 20px; }
+        .nav-tabs { cursor: pointer; }
+        .tab-content { background: white; padding: 20px; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 5px 5px; }
+        .chat-box { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="mb-4">Restaurant Analytics Dashboard</h2>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#predict">Predictions</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#viz">Visualizations</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#rag">RAG Chatbot</button></li>
+        </ul>
+        <div class="tab-content">
+            <!-- Prediction Tab -->
+            <div class="tab-pane fade show active" id="predict">
+                <form action="/predict" method="post">
+                    <div class="mb-3"><label>Votes</label><input type="number" name="votes" class="form-control" value="100"></div>
+                    <div class="mb-3"><label>Online Order (1=Yes, 0=No)</label><input type="number" name="online" class="form-control" value="1"></div>
+                    <button type="submit" class="btn btn-primary">Get Prediction</button>
+                </form>
+                {% if pred_text %}<div class="mt-3 alert alert-info">{{ pred_text }}</div>{% endif %}
+            </div>
+            <!-- Viz Tab -->
+            <div class="tab-pane fade" id="viz">
+                <h4>Model Insights</h4>
+                <img src="/static/dist_plot.png" class="img-fluid mb-4">
+                <img src="/static/shap_plot.png" class="img-fluid">
+            </div>
+            <!-- RAG Tab -->
+            <div class="tab-pane fade" id="rag">
+                <div class="chat-box" id="chat">Welcome! Ask me anything about our 1000 restaurants.</div>
+                <input type="text" id="query" class="form-control" placeholder="e.g. Find me Italian food">
+                <button onclick="askRag()" class="btn btn-success mt-2">Send</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function askRag() {
+            let q = document.getElementById('query').value;
+            let chat = document.getElementById('chat');
+            chat.innerHTML += '<p><b>You:</b> ' + q + '</p>';
+            let res = await fetch('/chat?q=' + q);
+            let data = await res.text();
+            chat.innerHTML += '<p><b>Bot:</b> ' + data + '</p>';
+            document.getElementById('query').value = '';
+        }
+    </script>
+</body>
+</html>
