@@ -1,0 +1,29 @@
+{
+  "models": [
+    {
+      "id": "rating-rf",
+      "name": "Random Forest Rating Regressor",
+      "task": "regression",
+      "file": "rating_regressor.joblib",
+      "inputs": [
+        {"name": "location", "label": "Location", "type": "select", "options": ["Banashankari", "Bannerghatta Road", "Basavanagudi", "Bellandur", "BTM", "Electronic City", "HSR", "Indiranagar", "Jayanagar", "JP Nagar", "Kalyan Nagar", "Koramangala", "Marathahalli", "MG Road", "Rajajinagar", "Whitefield"]},
+        {"name": "online_order", "label": "Online Order", "type": "select", "options": [[1, "Yes"], [0, "No"]]},
+        {"name": "book_table", "label": "Book Table", "type": "select", "options": [[1, "Yes"], [0, "No"]]},
+        {"name": "approx_cost(for two people)", "label": "Approximate cost for two people (₹)", "type": "number", "default": 500}
+      ]
+    },
+    {
+      "id": "sentiment-rf",
+      "name": "Random Forest Sentiment Classifier",
+      "task": "classification",
+      "file": "sentiment_classifier.joblib",
+      "labels": {"0": "Bad", "1": "Good", "2": "Excellent"},
+      "inputs": [
+        {"name": "location", "label": "Location", "type": "select", "options": ["Banashankari", "Bannerghatta Road", "Basavanagudi", "Bellandur", "BTM", "Electronic City", "HSR", "Indiranagar", "Jayanagar", "JP Nagar", "Kalyan Nagar", "Koramangala", "Marathahalli", "MG Road", "Rajajinagar", "Whitefield"]},
+        {"name": "online_order", "label": "Online Order", "type": "select", "options": [[1, "Yes"], [0, "No"]]},
+        {"name": "book_table", "label": "Book Table", "type": "select", "options": [[1, "Yes"], [0, "No"]]},
+        {"name": "approx_cost(for two people)", "label": "Approximate cost for two people (₹)", "type": "number", "default": 500}
+      ]
+    }
+  ]
+}
