@@ -33,3 +33,40 @@ Restaurant-Analytics-Predictive-Intelligence-System/
     ├── app.py                       # Flask application entry point
     ├── feature_schema.json          # Input feature definitions
     └── requirements.txt             # Python dependencies
+```
+## 🛠️ Local Setup & Installation
+Clone the repository:
+
+### Bash
+```
+git clone [https://github.com/AshishNalawade0188/Restaurant-Analytics-Predictive-Intelligence-System.git](https://github.com/AshishNalawade0188/Restaurant-Analytics-Predictive-Intelligence-System.git)
+cd Restaurant-Analytics-Predictive-Intelligence-System/zomato_app
+Create and activate a virtual environment:
+```
+### Bash
+```
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+```
+### Install dependencies:
+
+Bash
+```
+pip install -r requirements.txt
+Configure environment variables:
+Create a .env file in zomato_app/src/ or the root directory:
+```
+### Code snippet
+```
+GROQ_API_KEY=your_groq_api_key_here
+```
+## Run the Flask application:
+
+### Bash
+```
+python app.py
+Access the UI at http://127.0.0.1:5000
+```
