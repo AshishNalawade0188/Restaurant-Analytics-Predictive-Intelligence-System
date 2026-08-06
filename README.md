@@ -18,21 +18,25 @@ An end-to-end Machine Learning and Retrieval-Augmented Generation (RAG) platform
 ```text
 Restaurant-Analytics-Predictive-Intelligence-System/
 └── zomato_app/
-    ├── artifacts/                   # Trained model pickles & JSON dropdown categories
+    ├── artifacts/                   # Model pickles & JSON dropdown categories
     │   ├── categories.json
     │   ├── dropna_ridge_regression_model.pickle
     │   └── dt_classifier_without_imputation.pkl
-    ├── data/                        # Dataset storage
-    ├── src/                         # Core utility scripts and RAG pipeline
+    ├── data/                        # Dataset directory
+    │   └── restaurant_reviews_enriched_imputed.csv.gz
+    ├── src/                         # Core utility scripts & RAG pipeline
+    │   ├── chroma_storage/          # Auto-generated ChromaDB vector store (git-ignored)
     │   ├── extract_categories.py
     │   ├── model_utils.py
     │   └── RAG_V3.py
-    ├── static/                      # Styling assets
+    ├── static/                      # Custom CSS styling
     ├── templates/                   # Frontend UI templates
     │   └── index.html
+    ├── .env.example                 # Environment variables template
+    ├── .gitignore                   # Git exclusions (ignores secrets & vector store)
     ├── app.py                       # Flask application entry point
-    ├── feature_schema.json          # Input feature definitions
-    └── requirements.txt             # Python dependencies
+    ├── feature_schema.json          # Input feature schema definition
+    └── requirements.txt             # Production dependencies
 ```
 ## 🛠️ Local Setup & Installation
 Clone the repository:
