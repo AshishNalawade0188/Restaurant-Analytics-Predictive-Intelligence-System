@@ -1,0 +1,78 @@
+{
+  "classification_features": {
+    "required_columns": [
+      "online_order",
+      "book_table",
+      "votes",
+      "location",
+      "approx_cost(for two people)"
+    ],
+    "target_mapping": {
+      "0": "High Rating (>=3.8)",
+      "1": "Low Rating (< 3.8)"
+    }
+  },
+  "regression_features": {
+    "required_columns": [
+      "online_order",
+      "book_table",
+      "votes",
+      "rest_type",
+      "dish_liked",
+      "cuisines",
+      "approx_cost(for two people)",
+      "listed_in(type)"
+    ]
+  },
+  "dropdown_options": {
+    "location": [
+      "BTM",
+      "Electronic City",
+      "HSR",
+      "Indiranagar",
+      "JP Nagar",
+      "Jayanagar",
+      "Koramangala 5th Block",
+      "Marathahalli",
+      "Whitefield"
+    ],
+    "rest_type": [
+      "Bakery",
+      "Beverage Shop",
+      "Cafe",
+      "Casual Dining",
+      "Delivery",
+      "Dessert Parlor",
+      "Pub",
+      "Quick Bites"
+    ],
+    "listed_in(type)": [
+      "Buffet",
+      "Cafes",
+      "Delivery",
+      "Desserts",
+      "Dine-out",
+      "Pubs and bars"
+    ],
+    "cuisines": [
+      "Biryani",
+      "Cafe",
+      "Chinese",
+      "Continental",
+      "Fast Food",
+      "Italian",
+      "North Indian",
+      "South Indian"
+    ],
+    "dish_liked": [
+      "Biryani",
+      "Burger",
+      "Cocktails",
+      "Coffee",
+      "Mocktails",
+      "Noodles",
+      "Pasta",
+      "Pizza"
+    ]
+  }
+}

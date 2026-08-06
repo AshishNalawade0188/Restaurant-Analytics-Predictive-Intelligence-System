@@ -1,0 +1,51 @@
+{
+  "rest_type": [
+    "Bakery",
+    "Beverage Shop",
+    "Cafe",
+    "Casual Dining",
+    "Delivery",
+    "Dessert Parlor",
+    "Pub",
+    "Quick Bites"
+  ],
+  "dish_liked": [
+    "Biryani",
+    "Burger",
+    "Cocktails",
+    "Coffee",
+    "Mocktails",
+    "Noodles",
+    "Pasta",
+    "Pizza"
+  ],
+  "cuisines": [
+    "Biryani",
+    "Cafe",
+    "Chinese",
+    "Continental",
+    "Fast Food",
+    "Italian",
+    "North Indian",
+    "South Indian"
+  ],
+  "listed_in(type)": [
+    "Buffet",
+    "Cafes",
+    "Delivery",
+    "Desserts",
+    "Dine-out",
+    "Pubs and bars"
+  ],
+  "location": [
+    "BTM",
+    "Electronic City",
+    "HSR",
+    "Indiranagar",
+    "JP Nagar",
+    "Jayanagar",
+    "Koramangala 5th Block",
+    "Marathahalli",
+    "Whitefield"
+  ]
+}

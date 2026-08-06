@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Analytics Predictive Intelligence System</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f1ea; color: #2b2320; margin: 0; padding: 40px 16px; }
+        .wrap { max-width: 800px; margin: 0 auto; transition: max-width 0.3s ease; }
+        h1 { margin-bottom: 4px; font-size: 28px; text-align: center; }
+        .subtitle { color: #6b5e54; margin-top: 0; margin-bottom: 24px; text-align: center; }
+        .card { background: #ffffff; border: 1px solid #e6ddd1; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        
+        .tabs-nav { display: flex; gap: 8px; border-bottom: 2px solid #e6ddd1; margin-bottom: 20px; }
+        .tab-btn { background: transparent; border: none; padding: 10px 16px; font-size: 14px; font-weight: 600; color: #6b5e54; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .tab-btn.active { color: #cb3a3a; border-bottom: 3px solid #cb3a3a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: 13px; font-weight: 600; color: #4a3f37; }
+        .field select, .field input { padding: 8px 10px; border-radius: 6px; border: 1px solid #d6cabb; font-size: 14px; background: #fffdfb; }
+        .submit { margin-top: 22px; width: 100%; padding: 12px; border: none; border-radius: 8px; background: #cb3a3a; color: white; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .submit:disabled { background: #cbb9ac; cursor: not-allowed; }
+        .submit:hover:not(:disabled) { background: #b32e2e; }
+        
+        .result { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee4d8; }
+        .metric { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+        .metric-label { color: #6b5e54; font-size: 14px; }
+        .metric-value { font-size: 28px; font-weight: 700; color: #cb3a3a; }
+        
+        .chat-box { height: 350px; overflow-y: auto; border: 1px solid #d6cabb; border-radius: 8px; padding: 16px; background: #fffdfb; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+        .message { padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .message.user { align-self: flex-end; background: #cb3a3a; color: #ffffff; }
+        .message.bot { align-self: flex-start; background: #eee4d8; color: #2b2320; }
+        .chat-input-row { display: flex; gap: 8px; }
+        .chat-input-row input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #d6cabb; }
+        .chat-input-row button { margin-top: 0; width: auto; padding: 10px 20px; }
+        
+        @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>Restaurant Analytics Predictive Intelligence System</h1>
+    <p class="subtitle">Predict ratings, classify tiers, and search restaurant data via AI</p>
+
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('regression', event)">Regression Prediction</button>
+        <button class="tab-btn" onclick="switchTab('classification', event)">Classification Prediction</button>
+        <button class="tab-btn" onclick="switchTab('rag', event)">RAG Chatbot</button>
+        <button class="tab-btn" onclick="switchTab('tableau', event)">Tableau Analytics</button>
+    </div>
+
+    <div class="card">
+        <!-- TAB 1: REGRESSION -->
+        <div id="tab-regression" class="tab-content active">
+            <h3 style="margin-top:0;">Predict Restaurant Rate</h3>
+            <p style="font-size: 13px; color: #6b5e54;">Enter details to predict exact numerical rating out of 5.0</p>
+            
+            <form method="POST" action="/">
+                <div class="grid">
+                    <div class="field">
+                        <label>Online Order</label>
+                        <select name="online_order">
+                            <option value="Yes" {% if form_values.online_order == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if form_values.online_order == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Table Booking</label>
+                        <select name="book_table">
+                            <option value="Yes" {% if form_values.book_table == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if form_values.book_table == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Votes</label>
+                        <input type="number" name="votes" value="{{ form_values.votes }}" required>
+                    </div>
+                    <div class="field">
+                        <label>Approx. Cost (for two)</label>
+                        <input type="number" name="approx_cost" value="{{ form_values.approx_cost }}" required>
+                    </div>
+                    <div class="field">
+                        <label>Restaurant Type</label>
+                        <select name="rest_type">
+                            {% for item in categories.rest_type %}
+                            <option value="{{ item }}" {% if form_values.rest_type == item %}selected{% endif %}>{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Listed In (Type)</label>
+                        <select name="listed_in_type">
+                            {% for item in categories['listed_in(type)'] %}
+                            <option value="{{ item }}" {% if form_values.listed_in_type == item %}selected{% endif %}>{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Cuisines</label>
+                        <select name="cuisines">
+                            {% for item in categories.cuisines %}
+                            <option value="{{ item }}" {% if form_values.cuisines == item %}selected{% endif %}>{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Dish Liked</label>
+                        <select name="dish_liked">
+                            {% for item in categories.dish_liked %}
+                            <option value="{{ item }}" {% if form_values.dish_liked == item %}selected{% endif %}>{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="submit" {% if model_missing %}disabled{% endif %}>
+                    {% if model_missing %}Model Missing (dropna_ridge_regression_model.pickle){% else %}Predict Rating{% endif %}
+                </button>
+            </form>
+
+            {% if prediction is not none %}
+            <div class="result">
+                <div class="metric">
+                    <span class="metric-label">Predicted Numerical Rating</span>
+                    <span class="metric-value">{{ prediction }} / 5.0</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- TAB 2: CLASSIFICATION -->
+        <div id="tab-classification" class="tab-content">
+            <h3 style="margin-top:0;">Categorize Restaurant</h3>
+            <p style="font-size: 13px; color: #6b5e54;">Predict high/low tier categories.</p>
+            
+            <form id="classification-form" onsubmit="handleClassificationSubmit(event)">
+                <div class="grid">
+                    <div class="field">
+                        <label>Online Order</label>
+                        <select id="class_online_order">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Table Booking</label>
+                        <select id="class_book_table">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Votes</label>
+                        <input type="number" id="class_votes" value="250" required>
+                    </div>
+                    <div class="field">
+                        <label>Approx. Cost (for two)</label>
+                        <input type="number" id="class_approx_cost" value="600" required>
+                    </div>
+                    <div class="field">
+                        <label>Location</label>
+                        <select id="class_location">
+                            {% for loc in categories.get('location', ['BTM', 'Koramangala 5th Block', 'HSR', 'Indiranagar']) %}
+                            <option value="{{ loc }}">{{ loc }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" id="class-submit-btn" class="submit">Predict Category Tier</button>
+            </form>
+
+            <div id="class-result" class="result" style="display: none;">
+                <div class="metric">
+                    <span class="metric-label">Predicted Category</span>
+                    <span class="metric-value" id="class-category-val">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: RAG CHATBOT -->
+        <div id="tab-rag" class="tab-content">
+            <h3 style="margin-top:0;">Zomato Knowledge Chatbot</h3>
+            <div id="chat-box" class="chat-box">
+                <div class="message bot">Hello! I am your Zomato AI Assistant. Ask me about cuisines, dishes, or restaurant ratings!</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="rag-user-input" placeholder="Ask about restaurants..." onkeydown="if(event.key==='Enter') sendRagMessage()">
+                <button id="rag-send-btn" class="submit" onclick="sendRagMessage()">Send</button>
+            </div>
+        </div>
+
+        <!-- TAB 4: TABLEAU VIZ -->
+        <div id="tab-tableau" class="tab-content">
+            <h3 style="margin-top:0; margin-bottom:8px;">Tableau Public Analytics</h3>
+            <p class="subtitle" style="text-align: left; margin-bottom: 24px;">
+                Interactive visual analytics on Bangalore restaurant distributions, pricing, and ratings.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 32px; width: 100%;">
+                <div style="background: #ffffff; border: 1px solid #e6ddd1; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                    <h4 style="margin: 0 0 14px 0; color: #4a3f37; font-size: 16px;">Dashboard 1: Restaurant Sentiment Analysis</h4>
+                    <div style="width: 100%; height: 900px; border-radius: 6px; overflow: hidden;">
+                        <iframe 
+                            src="https://public.tableau.com/views/nlp_woorkbook_17859512983340/Dashboard1?:embed=y&:showVizHome=n&:apiReportingEnabled=false" 
+                            style="width: 100%; height: 100%; border: 0;" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+
+                <div style="background: #ffffff; border: 1px solid #e6ddd1; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                    <h4 style="margin: 0 0 14px 0; color: #4a3f37; font-size: 16px;">Dashboard 2: Comparison Based on Evaluation Metrics</h4>
+                    <div style="width: 100%; height: 850px; border-radius: 6px; overflow: hidden;">
+                        <iframe 
+                            src="https://public.tableau.com/views/ML_Models/ML_Models?:embed=y&:showVizHome=n&:apiReportingEnabled=false" 
+                            style="width: 100%; height: 100%; border: 0;" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tabName, evt) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById('tab-' + tabName).classList.add('active');
+    if (evt && evt.currentTarget) {
+        evt.currentTarget.classList.add('active');
+    }
+
+    const wrapEl = document.querySelector('.wrap');
+    if (wrapEl) {
+        if (tabName === 'tableau') {
+            wrapEl.style.maxWidth = '1200px';
+        } else {
+            wrapEl.style.maxWidth = '800px';
+        }
+    }
+}
+
+async function handleClassificationSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('class-submit-btn');
+    const resDiv = document.getElementById('class-result');
+    const valSpan = document.getElementById('class-category-val');
+    
+    btn.disabled = true;
+    btn.innerText = "Predicting...";
+
+    const payload = {
+        online_order: document.getElementById('class_online_order').value,
+        book_table: document.getElementById('class_book_table').value,
+        votes: document.getElementById('class_votes').value,
+        location: document.getElementById('class_location').value,
+        approx_cost: document.getElementById('class_approx_cost').value
+    };
+
+    try {
+        const res = await fetch('/api/predict/classification', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            valSpan.innerText = data.predicted_category;
+            resDiv.style.display = 'block';
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch(err) {
+        alert('Request failed. Check server logs.');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Predict Category Tier";
+    }
+}
+
+async function sendRagMessage() {
+    const input = document.getElementById('rag-user-input');
+    const chatBox = document.getElementById('chat-box');
+    const text = input.value.trim();
+    if (!text) return;
+
+    chatBox.innerHTML += `<div class="message user">${escapeHtml(text)}</div>`;
+    input.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+        const res = await fetch('/api/rag/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            chatBox.innerHTML += `<div class="message bot">${escapeHtml(data.response)}</div>`;
+        } else {
+            chatBox.innerHTML += `<div class="message bot" style="color:red;">Error: ${escapeHtml(data.message)}</div>`;
+        }
+    } catch (err) {
+        chatBox.innerHTML += `<div class="message bot" style="color:red;">Failed to reach RAG server.</div>`;
+    }
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text;
+    return div.innerHTML;
+}
+</script>
+</body>
+</html>
