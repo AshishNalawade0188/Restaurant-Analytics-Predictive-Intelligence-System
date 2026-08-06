@@ -12,6 +12,7 @@ Refactored to provide natural, humane, and conversational responses:
 import sys
 import math
 import os
+import urllib.request
 from pathlib import Path
 from ast import literal_eval
 
@@ -30,7 +31,17 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_DIR = SCRIPT_DIR.parent / "data"
-CSV_PATH = str(DATA_DIR / "restaurant_reviews_enriched_imputed.csv")
+os.makedirs(DATA_DIR, exist_ok=True)
+# Dataset path inside Render/Local environment
+CSV_PATH = str(DATA_DIR / "restaurant_reviews_enriched_imputed.csv.gz")
+
+# Auto-download from GitHub Release if missing
+if not os.path.exists(CSV_PATH):
+    print("Downloading dataset from GitHub Releases...")
+    DOWNLOAD_URL = "https://github.com/AshishNalawade0188/Restaurant-Analytics-Predictive-Intelligence-System/releases/download/v1.0.0/restaurant_reviews_enriched_imputed.csv.gz"  # Paste the link you copied in Step 2
+    urllib.request.urlretrieve(DOWNLOAD_URL, CSV_PATH)
+    print("Dataset download complete!")
+    
 SAMPLE_SIZE = None          # Set to None for the full dataset
 REBUILD_INDEX = False        # Set to False to reuse existing Chroma storage
 CHROMA_PATH = str(SCRIPT_DIR / "chroma_storage")
