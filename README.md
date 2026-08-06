@@ -1,83 +1,35 @@
-# Restaurant Rating Predictor — Flask Dashboard
+# Restaurant Analytics & Predictive Intelligence System
 
-Loads the 3 trained models (Random Forest, CatBoost, TF-IDF + Naive Bayes)
-plus the saved label encoders, and serves a form-based UI that returns a
-"High Rating" probability from each model side by side.
+An end-to-end Machine Learning and Retrieval-Augmented Generation (RAG) platform that provides restaurant rating predictions, success classification, conversational AI analytics, and interactive dashboard visualisations using Zomato dataset insights.
 
-## 1. Get the model files
+---
 
-Run `ML_project_imputed_clean.py` (or `ML_project_without_imputed_clean.py`)
-end to end, in Colab or locally. Its final save step now produces a
-`models/` folder containing:
+## 🚀 Key Features
 
-```
-models/
-  best_rf_classifier.pkl
-  best_catboost_classifier.pkl
-  tfidf_nb_pipeline.pkl
-  label_encoders.pkl        <- new: needed for the dropdowns to work
-  feature_list.pkl          <- new: needed so the app builds rows in the right order
-```
+* **Rating Prediction (Regression):** Predicts exact restaurant ratings out of 5.0 using a Ridge Regression model.
+* **Success Classification:** Classifies restaurants into High Success ($\ge 3.8$) or Low Rating categories using a Decision Tree classifier.
+* **RAG Conversational Assistant:** Interactively query dataset insights using LlamaIndex, ChromaDB vector store, and Groq LLM integration.
+* **Embedded Analytics:** Integrated Tableau dashboards for visual exploratory data analysis.
 
-Copy that whole `models/` folder into this project, next to `app.py`, so
-the layout looks like:
+---
 
-```
-flask_app/
-  app.py
-  requirements.txt
-  models/            <- copied in from the training run
-  templates/
-    index.html
-  static/
-    style.css
-```
+## 📁 Repository Structure
 
-## 2. Run locally
-
-```bash
-pip install -r requirements.txt
-python app.py
-```
-
-Open http://127.0.0.1:5000
-
-## 3. Run inside Google Colab (ngrok, like your original notebook)
-
-```python
-!pip install flask pyngrok flask-ngrok --quiet
-
-# In app.py, right after `app = Flask(__name__)`, add:
-#     from flask_ngrok import run_with_ngrok
-#     run_with_ngrok(app)
-# and change the last line from app.run(debug=True) to app.run()
-
-!python app.py
-```
-
-ngrok will print a public URL you can click to open the dashboard.
-
-## How predictions are combined
-
-Each model looks at the problem differently:
-- **Random Forest** and **CatBoost** use the structured fields (votes,
-  cost, location, restaurant type, listing type, online order, table
-  booking).
-- **TF-IDF + Naive Bayes** uses *only* the cuisine text you type in.
-
-The dashboard shows all three individually, plus a simple average
-("ensemble") as the headline number — since no single model is
-definitively "correct," averaging reduces the impact of any one model's
-blind spot (e.g., CatBoost being over-sensitive to vote count).
-
-## Notes / things to be aware of
-
-- If you pick a location/restaurant type/listing type the model never saw
-  during training, it's automatically routed to an "Unknown" bucket
-  rather than crashing — but the dropdowns are built directly from what
-  each encoder learned, so in practice this only matters if you're
-  scripting requests directly instead of using the form.
-- `app.run(debug=True)` is fine for local development. Turn `debug` off
-  (or run behind `gunicorn`) before deploying anywhere other than your
-  own machine — debug mode exposes an interactive debugger that can
-  execute arbitrary code.
+```text
+Restaurant-Analytics-Predictive-Intelligence-System/
+└── zomato_app/
+    ├── artifacts/                   # Trained model pickles & JSON dropdown categories
+    │   ├── categories.json
+    │   ├── dropna_ridge_regression_model.pickle
+    │   └── dt_classifier_without_imputation.pkl
+    ├── data/                        # Dataset storage
+    ├── src/                         # Core utility scripts and RAG pipeline
+    │   ├── extract_categories.py
+    │   ├── model_utils.py
+    │   └── RAG_V3.py
+    ├── static/                      # Styling assets
+    ├── templates/                   # Frontend UI templates
+    │   └── index.html
+    ├── app.py                       # Flask application entry point
+    ├── feature_schema.json          # Input feature definitions
+    └── requirements.txt             # Python dependencies
