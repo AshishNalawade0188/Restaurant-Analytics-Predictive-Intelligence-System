@@ -1,4 +1,3 @@
-Here is a complete, clean, and comprehensive **`README.md`** tailored to document the machine learning workflow, data pipeline, experimental setup, evaluation results, and model serialization defined in your Jupyter notebook.
 
 ---
 
@@ -25,22 +24,6 @@ Predicting restaurant rating tiers and exact rating classes based on operational
 * **Fair Evaluation Protocol**: Compares imputed vs. complete-case models on the exact same shared complete-case evaluation test set.
 
 ---
-
-## 📁 Repository Structure
-
-```text
-.
-├── zomato_rating_pipeline.ipynb      # Complete experimental notebook
-├── MultiLabelColumnBinarizer.py       # Custom transformer code for pipeline deployment
-├── zomato_knn_A_imputed_5class.pkl    # Model A: 5-class rating predictor
-├── zomato_knn_A_imputed_tier.pkl      # Model A: 3-tier rating predictor
-├── zomato_knn_B_raw_5class.pkl        # Model B: Raw 5-class rating predictor
-├── zomato_knn_B_raw_tier.pkl          # Model B: Raw 3-tier rating predictor
-├── *_metadata.json                    # Model training metadata & performance stats
-└── README.md                          # Project documentation
-
-```
-
 ---
 
 ## 🛠️ Data Pipeline & Preprocessing
