@@ -1,6 +1,6 @@
 ```markdown
 # 🍲 Zomato RAG Chatbot — Conversational Discovery Engine
-
+==> RAG file titled RAG_V3.py , other files for simply testing and debugging LLM issues.
 A Refactored Retrieval-Augmented Generation (RAG) pipeline designed to act as an intuitive, warm, and conversational food and restaurant discovery assistant for Zomato. Built on **LlamaIndex**, **ChromaDB**, and powered by **Groq (`llama-3.1-8b-instant`)** and **HuggingFace (`BAAI/bge-small-en-v1.5`)**.
 
 ---
