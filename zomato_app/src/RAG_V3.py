@@ -12,7 +12,6 @@ Refactored to provide natural, humane, and conversational responses:
 import sys
 import math
 import os
-import urllib.request
 from pathlib import Path
 from ast import literal_eval
 
@@ -30,28 +29,18 @@ load_dotenv()
 # CONFIG — edit these for your setup
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = Path(__file__).resolve().parent
-DATA_DIR = SCRIPT_DIR.parent / "data"
-os.makedirs(DATA_DIR, exist_ok=True)
-# Dataset path inside Render/Local environment
-CSV_PATH = str(DATA_DIR / "restaurant_reviews_enriched_imputed.csv.gz")
 
-# Auto-download from GitHub Release if missing
-if not os.path.exists(CSV_PATH):
-    print("Downloading dataset from GitHub Releases...")
-    DOWNLOAD_URL = "https://github.com/AshishNalawade0188/Restaurant-Analytics-Predictive-Intelligence-System/releases/download/v1.0.0/restaurant_reviews_enriched_imputed.csv.gz"  # Paste the link you copied in Step 2
-    urllib.request.urlretrieve(DOWNLOAD_URL, CSV_PATH)
-    print("Dataset download complete!")
-    
+CSV_PATH = r"F:\Downloads\restaurant_reviews_enriched_imputed.csv"
 SAMPLE_SIZE = None          # Set to None for the full dataset
 REBUILD_INDEX = False        # Set to False to reuse existing Chroma storage
 CHROMA_PATH = str(SCRIPT_DIR / "chroma_storage")
 COLLECTION_NAME = "zomato_rag"
 
 # --- Embedding throughput + chunking config ---
-EMBED_MAX_SEQ_TOKENS = 512          
-CHUNK_SIZE = 400                    
-CHUNK_OVERLAP = 60                  
-EMBED_BATCH_SIZE = 128              
+EMBED_MAX_SEQ_TOKENS = 512
+CHUNK_SIZE = 600
+CHUNK_OVERLAP = 60
+EMBED_BATCH_SIZE = 128
 
 # Preprocessed CSV Column Mapping
 COLUMN_MAP = {
@@ -94,14 +83,13 @@ NLP_COLUMN_MAP = {
 # ---------------------------------------------------------------------------
 SYSTEM_PROMPT = (
     "You are a friendly, knowledgeable, and objective food and restaurant discovery assistant for Zomato.\n"
-    "Your main objective is to provide helpful, natural, and conversational responses based strictly on the retrieved context.\n\n"
+    "Your main objective is to provide helpful, natural, and conversational responses based on the retrieved context.\n\n"
     "Core Guidelines:\n"
-    "1. Speak naturally like a local dining guide. Never list raw metadata keys or output raw field labels "
-    "(such as 'sentiment_score', 'positive_ratio', 'nlp_source', or 'keywords:').\n"
-    "2. Handle negative reviews with empathy and nuance. Instead of regurgitating raw token lists (e.g., 'found hair, kill, food thanks'), "
-    "summarize core issues naturally (e.g., mentioning specific hygiene concerns or food quality feedback reported by customers).\n"
-    "3. Seamlessly weave restaurant statistics (ratings, average costs, location) into flowing sentences.\n"
-    "4. If certain details are missing from the context, state it naturally without sounding overly rigid or robotic."
+    "1. Speak naturally like a local dining guide. Never output raw metadata keys or field labels.\n"
+    "2. Be resilient to minor location spelling mistakes (e.g., treat 'Kormangala' or 'Kormanagala' as 'Koramangala').\n"
+    "3. If retrieved context has close matches, summarize the best relevant options.\n"
+    "4. If exact matching records are sparse, mention the available high-rated places in nearby areas or general recommendations from the retrieved data.\n"
+    "5. Only give a refusal response if the query is completely unrelated to food, restaurants, or dining."
 )
 
 # ---------------------------------------------------------------------------
@@ -124,7 +112,7 @@ if USE_REAL_MODELS:
         embed_batch_size=EMBED_BATCH_SIZE,
     )
     Settings.llm = OpenAILike(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         api_base="https://api.groq.com/openai/v1",
         api_key=GROQ_API_KEY,
         is_chat_model=True,
@@ -335,7 +323,7 @@ def run_chat(index: VectorStoreIndex):
     # Configure the chat engine with system prompt and temperature settings
     chat_engine = index.as_chat_engine(
         chat_mode="condense_plus_context",
-        similarity_top_k=3,
+        similarity_top_k=8,
         system_prompt=SYSTEM_PROMPT,
         temperature=0.4,  # Optimal balance of structured accuracy & conversational warmth
     )
@@ -371,7 +359,7 @@ def run_evaluation(index: VectorStoreIndex, questions=None, out_path="evaluation
     from llama_index.core.evaluation import FaithfulnessEvaluator, RelevancyEvaluator
 
     questions = questions or EVAL_QUESTIONS
-    query_engine = index.as_query_engine(similarity_top_k=3)
+    query_engine = index.as_query_engine(similarity_top_k=8)
     faithfulness_eval = FaithfulnessEvaluator(llm=Settings.llm)
     relevancy_eval = RelevancyEvaluator(llm=Settings.llm)
 
